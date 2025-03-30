@@ -1,6 +1,6 @@
 let tileSize = 30;
 let cols = 10;
-let rows = 20;
+let rows = 15;
 
 let board;
 let currentPiece;
