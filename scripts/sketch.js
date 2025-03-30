@@ -4,35 +4,51 @@ let rows = 20;
 
 let board;
 let currentPiece;
-let dropInterval = 1000; // milliseconds
+let dropInterval = 1000;
 let lastDropTime = 0;
+
+let gameRunning = false;
+let gamePaused = false;
 let gameOver = false;
+let score = 0;
 
 function setup() {
   let canvas = createCanvas(cols * tileSize, rows * tileSize);
   canvas.parent("tetris-canvas");
 
-  board = new Board(cols, rows, tileSize);
-  spawnNewPiece();
+  frameRate(60); // smoother timing
+
+  initGame();
+  noLoop(); // wait until Start is pressed
 }
 
 function draw() {
   background(20);
 
-  if (!gameOver) {
-    board.draw();
-    currentPiece.draw();
+  if (!gameRunning || gamePaused) return;
 
-    if (millis() - lastDropTime > dropInterval) {
-      dropPiece();
-      lastDropTime = millis();
-    }
-  } else {
+  board.draw();
+  currentPiece.draw();
+
+  if (millis() - lastDropTime > dropInterval) {
+    dropPiece();
+    lastDropTime = millis();
+  }
+
+  if (gameOver) {
     textAlign(CENTER, CENTER);
     textSize(32);
     fill(255, 100, 100);
     text("Game Over", width / 2, height / 2);
+    noLoop();
   }
+}
+
+function initGame() {
+  board = new Board(cols, rows, tileSize);
+  score = 0;
+  updateScore();
+  spawnNewPiece();
 }
 
 function spawnNewPiece() {
@@ -49,13 +65,15 @@ function dropPiece() {
   if (!board.isValidPosition(currentPiece)) {
     currentPiece.move(0, -1); // revert
     board.lockPiece(currentPiece);
-    board.clearFullRows();
+    let cleared = board.clearFullRows();
+    score += cleared * 100;
+    updateScore();
     spawnNewPiece();
   }
 }
 
 function keyPressed() {
-  if (gameOver) return;
+  if (!gameRunning || gamePaused || gameOver) return;
 
   if (keyCode === LEFT_ARROW) {
     currentPiece.move(-1, 0);
@@ -69,10 +87,48 @@ function keyPressed() {
   } else if (key === ' ' || keyCode === UP_ARROW) {
     currentPiece.rotate();
     if (!board.isValidPosition(currentPiece)) {
-      // Revert rotation by rotating 3 more times
-      currentPiece.rotate();
-      currentPiece.rotate();
-      currentPiece.rotate();
+      currentPiece.rotate(); currentPiece.rotate(); currentPiece.rotate();
     }
   }
+}
+
+function updateScore() {
+  document.getElementById("scoreDisplay").textContent = `Score: ${score}`;
+}
+
+// Button Actions
+
+function startGame() {
+  if (!gameRunning) {
+    initGame();
+    gameRunning = true;
+    gamePaused = false;
+    gameOver = false;
+    loop();
+  } else if (gamePaused) {
+    gamePaused = false;
+    loop();
+  }
+}
+
+function togglePause() {
+  if (!gameRunning || gameOver) return;
+
+  gamePaused = !gamePaused;
+  if (gamePaused) {
+    noLoop();
+  } else {
+    lastDropTime = millis(); // prevent instant drop after resume
+    loop();
+  }
+}
+
+function resetGame() {
+  gameRunning = false;
+  gamePaused = false;
+  gameOver = false;
+  score = 0;
+  updateScore();
+  initGame();
+  loop();
 }

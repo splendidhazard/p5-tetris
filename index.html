@@ -25,7 +25,17 @@
   <div class="container text-center" id="tetris-container">
     <h1 class="mb-4">Tetrin in p5.js</h1>
     <p class="text-muted">by Prateek Sharma</p>
-    <div id="tetris-canvas" class="d-flex justify-content-center"></div>
+    <div id="tetris-canvas" class="d-flex flex-column align-items-center">
+      <div class="mb-3">
+        <h4 id="scoreDisplay">Score: 0</h4>
+      </div>
+    
+      <div class="mb-3">
+        <button class="btn btn-success me-2" onclick="startGame()">Start</button>
+        <button class="btn btn-warning me-2" onclick="togglePause()">Pause</button>
+        <button class="btn btn-danger" onclick="resetGame()">Reset</button>
+      </div>
+    </div>    
   </div>
 
   <!-- Your custom scripts -->
